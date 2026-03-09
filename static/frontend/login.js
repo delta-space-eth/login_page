@@ -1,13 +1,27 @@
 const form = document.getElementById("login-form");
+const loginBtn = document.getElementById("loginBtn");
 const message = document.getElementById("message");
-const togglePassword = document.getElementById("toggle-password");
-const passwordInput = document.getElementById("password");
 const usernameInput = document.getElementById("username");
-const rememberPassword = document.getElementById("remember-password");
-const keepLoggedIn = document.getElementById("keep-logged-in");
+const passwordInput = document.getElementById("password");
+const rememberPasswordInput = document.getElementById("rememberPassword");
+const keepLoggedInInput = document.getElementById("keepLoggedIn");
+const togglePasswordBtn = document.getElementById("togglePassword");
+const eyeIcon = document.getElementById("eyeIcon");
+
+function showMessage(text, type) {
+  message.className = type;
+  message.textContent = text;
+}
+
+function setLoading(loading) {
+  loginBtn.disabled = loading;
+  loginBtn.textContent = loading ? "正在安全验证..." : "立即登录";
+}
 
 function toHex(buffer) {
-  return [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  return [...new Uint8Array(buffer)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 async function sha256(text) {
@@ -16,27 +30,32 @@ async function sha256(text) {
   return toHex(digest);
 }
 
-function restoreRemembered() {
-  const remembered = localStorage.getItem("remembered_login");
-  if (!remembered) return;
-  const parsed = JSON.parse(remembered);
-  usernameInput.value = parsed.username || "";
-  passwordInput.value = "";
-  passwordInput.dataset.rememberedHash = parsed.passwordHash || "";
-  rememberPassword.checked = true;
+function restoreRememberedLogin() {
+  const raw = localStorage.getItem("remembered_login");
+  if (!raw) return;
+
+  try {
+    const parsed = JSON.parse(raw);
+    usernameInput.value = parsed.username || "";
+    passwordInput.dataset.rememberedHash = parsed.passwordHash || "";
+    rememberPasswordInput.checked = true;
+  } catch {
+    localStorage.removeItem("remembered_login");
+  }
 }
 
-restoreRemembered();
+restoreRememberedLogin();
 
-togglePassword.addEventListener("click", () => {
-  const isHidden = passwordInput.type === "password";
-  passwordInput.type = isHidden ? "text" : "password";
-  togglePassword.textContent = isHidden ? "隐藏" : "显示";
+togglePasswordBtn.addEventListener("click", () => {
+  const isPassword = passwordInput.type === "password";
+  passwordInput.type = isPassword ? "text" : "password";
+  eyeIcon.classList.toggle("fa-eye", !isPassword);
+  eyeIcon.classList.toggle("fa-eye-slash", isPassword);
 });
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  message.textContent = "";
+  showMessage("", "");
 
   const username = usernameInput.value.trim();
   const plainPassword = passwordInput.value;
@@ -49,34 +68,44 @@ form.addEventListener("submit", async (event) => {
   }
 
   if (!username || !passwordHash) {
-    message.textContent = "请输入用户名和密码。";
+    showMessage("请输入账号和密码", "error");
     return;
   }
 
-  const response = await fetch("/api/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username,
-      password_hash: passwordHash,
-      keep_logged_in: keepLoggedIn.checked,
-    }),
-  });
+  setLoading(true);
+  try {
+    const response = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username,
+        password_hash: passwordHash,
+        keep_logged_in: keepLoggedInInput.checked,
+      }),
+    });
 
-  const data = await response.json();
-  if (!response.ok || !data.ok) {
-    message.textContent = data.message || "登录失败。";
-    return;
+    const result = await response.json();
+    if (!response.ok || !result.ok) {
+      showMessage(result.message || "登录失败", "error");
+      return;
+    }
+
+    if (rememberPasswordInput.checked) {
+      localStorage.setItem(
+        "remembered_login",
+        JSON.stringify({ username, passwordHash })
+      );
+    } else {
+      localStorage.removeItem("remembered_login");
+    }
+
+    showMessage("登录成功，正在进入系统...", "success");
+    setTimeout(() => {
+      window.location.href = result.redirect;
+    }, 500);
+  } catch {
+    showMessage("网络异常，请稍后再试", "error");
+  } finally {
+    setLoading(false);
   }
-
-  if (rememberPassword.checked) {
-    localStorage.setItem(
-      "remembered_login",
-      JSON.stringify({ username, passwordHash })
-    );
-  } else {
-    localStorage.removeItem("remembered_login");
-  }
-
-  window.location.href = data.redirect;
 });
