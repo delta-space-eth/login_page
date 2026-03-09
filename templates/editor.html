@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>功能页面</title>
+    <style>
+      body { font-family: "Segoe UI", "PingFang SC", sans-serif; margin: 0; padding: 24px; background:#f8fafc; }
+      .top { display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px; }
+      textarea { width: 100%; min-height: 60vh; border-radius: 8px; border: 1px solid #94a3b8; padding: 12px; box-sizing: border-box; }
+      button { border:none; padding:10px 12px; border-radius:8px; cursor:pointer; background:#ef4444; color:#fff; }
+    </style>
+  </head>
+  <body>
+    <div class="top">
+      <strong>欢迎，{{ username }}（已登录）</strong>
+      <button id="logout">退出登录</button>
+    </div>
+    <textarea placeholder="请在此输入文本..."></textarea>
+
+    <script>
+      document.getElementById("logout").addEventListener("click", async () => {
+        const response = await fetch("/api/logout", { method: "POST" });
+        const data = await response.json();
+        window.location.href = data.redirect || "/login";
+      });
+    </script>
+  </body>
+</html>

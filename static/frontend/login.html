@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>系统登录 - 身份验证</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/static/frontend/login.css" />
+  </head>
+  <body>
+    <main class="login-card" aria-label="登录卡片">
+      <header class="header">
+        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+        <h1>账号登录</h1>
+      </header>
+
+      <form id="login-form" novalidate>
+        <div class="input-group">
+          <i class="fas fa-user left-icon" aria-hidden="true"></i>
+          <input
+            type="text"
+            id="username"
+            placeholder="请输入用户名"
+            autocomplete="username"
+            spellcheck="false"
+            required
+          />
+        </div>
+
+        <div class="input-group">
+          <i class="fas fa-lock left-icon" aria-hidden="true"></i>
+          <input
+            type="password"
+            id="password"
+            placeholder="请输入密码"
+            autocomplete="current-password"
+            required
+          />
+          <button
+            type="button"
+            class="toggle-password"
+            id="togglePassword"
+            aria-label="显示或隐藏密码"
+          >
+            <i class="fas fa-eye" id="eyeIcon" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="options-panel">
+          <label>
+            <input type="checkbox" id="rememberPassword" />
+            记住密码
+          </label>
+          <label>
+            <input type="checkbox" id="keepLoggedIn" />
+            保持登录（30天）
+          </label>
+        </div>
+
+        <button id="loginBtn" type="submit">立即登录</button>
+        <p id="message" aria-live="polite"></p>
+      </form>
+    </main>
+
+    <script src="/static/frontend/login.js"></script>
+  </body>
+</html>
