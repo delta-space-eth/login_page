@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>功能页</title>
+  <link rel="stylesheet" href="{{ url_for('func.static', filename='func.css') }}">
+</head>
+<body>
+  <main class="dashboard-container">
+    <h1>欢迎，{{ user }}！</h1>
+    <p>你已经成功登录，并跳转到功能页面。</p>
+    <a href="{{ url_for('auth.logout') }}">退出登录</a>
+  </main>
+  <script src="{{ url_for('func.static', filename='func.js') }}"></script>
+</body>
+</html>
